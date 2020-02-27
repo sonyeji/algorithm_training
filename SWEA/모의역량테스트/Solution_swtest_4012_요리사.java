@@ -1,16 +1,14 @@
-package com.ssafy.edu;
+package swea0227;
 
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-public class Solution_4012_요리사 {
+public class Solution_swtest_4012_요리사 {
 
 	static int N;
 	static int R;
@@ -56,7 +54,7 @@ public class Solution_4012_요리사 {
 		
 		for (int i = start; i < N; i++) {
 			list[count] = (i);
-			nCr(i+1, count+1);//중복 없는 조합
+			nCr(i+1, count+1);
 		}
 	}
 	

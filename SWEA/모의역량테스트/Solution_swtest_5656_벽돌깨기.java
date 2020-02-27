@@ -1,11 +1,11 @@
-package ssafy0211;
+package swea0227;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.StringTokenizer;
 
-public class Solution_5656_벽돌깨기 {
+public class Solution_swtest_5656_벽돌깨기 {
 
 	static int N, W, H;
 	static int[][] map;

@@ -1,4 +1,4 @@
-package swea0227;
+package swea0310;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,99 +7,137 @@ import java.util.StringTokenizer;
 
 public class Solution_swtest_5656_벽돌깨기 {
 
-	static int N, W, H;
+	static StringBuilder sb = new StringBuilder();
+	static int[][] dirs = {{-1, 0},{1, 0},{0, 1},{0, -1}};
+	static int T, N, C, R;
+	static int brickCnt;
+	static int answer;
 	static int[][] map;
-	static int min;
-	static int[] dy = {-1, 1, 0, 0};
-	static int[] dx = {0, 0, -1, 1};
-	
-	public static void main(String[] args) throws NumberFormatException, IOException {
-		// TODO Auto-generated method stub
+	public static void main(String[] args) throws Exception, IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		int T = Integer.parseInt(br.readLine().trim());
-		StringTokenizer st;
-		for (int test_case = 1; test_case <= T; test_case++) {
-			st = new StringTokenizer(br.readLine().trim());
-			N = Integer.parseInt(st.nextToken());
-			W = Integer.parseInt(st.nextToken());
-			H = Integer.parseInt(st.nextToken());
-			map = new int[H][W];
-			min = Integer.MAX_VALUE;
-			for (int i = 0; i < H; i++) {
-				st = new StringTokenizer(br.readLine().trim());
-				for (int j = 0; j < W; j++) {
-					map[i][j] = Integer.parseInt(st.nextToken().trim());
-				}
-			}
+		T = Integer.parseInt(br.readLine());
+		for (int tc = 1; tc <= T; tc++) {
+			sb.append("#").append(tc).append(" ");
+			StringTokenizer tokens = new StringTokenizer(br.readLine());
+			N = Integer.parseInt(tokens.nextToken());
+			C = Integer.parseInt(tokens.nextToken());
+			R = Integer.parseInt(tokens.nextToken());
+			map = new int[R][C];
+			brickCnt = 0;
 			
-			
-			bomb(1, 2);
-			down();
-			print();
-			bomb(2, 2);
-			down();
-			print();
-			bomb(8, 6);
-			down();
-			print();
-			
-			
-			System.out.println("#" + test_case + " " + min);
-		}
-	}
-	
-	public static void simul(int bNum) {
-		
-	}
-	
-	public static void bomb(int y, int x) {
-		int count = map[y][x];
-		map[y][x] = 0;
-		if(count == 1)	return;
-		for (int d = 0; d < 4; d++) {
-			int ty = y;
-			int tx = x;
-			for (int i = 1; i < count; i++) {
-				ty += dy[d];
-				tx += dx[d];
-				if(ty < 0 || ty >= H || tx < 0 || tx >= W)	break;
-				if(map[ty][tx] == 0)	continue;
-				bomb(ty, tx);
-			}
-		}
-	}
-	
-	public static void print() {
-		for (int i = 0; i < H; i++) {
-			for (int j = 0; j < W; j++) {
-				System.out.print(map[i][j] + " ");
-			}
-			System.out.println();
-		}
-		System.out.println();
-	}
-	
-	public static void down() {
-		for (int j = 0; j < W; j++) {
-			for (int i = H-1; i >= 0; i--) {
-				if(map[i][j] == 0) {
-					for (int k = i-1; k >= 0; k--) {
-						if(map[k][j] != 0) {
-							map[i][j] = map[k][j];
-							map[k][j] = 0;
-							break;
-						}
+			for (int r = 0; r < R; r++) {
+				tokens = new StringTokenizer(br.readLine());
+				for (int c = 0; c < C; c++) {
+					map[r][c] = Integer.parseInt(tokens.nextToken());
+					if(map[r][c] != 0) {
+						brickCnt++;
 					}
 				}
 			}
+			answer = brickCnt;
+			
+//			for (int [] row : map) {
+//				System.out.println(Arrays.toString(row));
+//			}
+			
+			dropMarble(N, brickCnt, map);
+			
+			sb.append(answer);
+			sb.append("\n");
 		}
+		System.out.println(sb);
+	}
+	private static void dropMarble(int r, int brickCnt, int[][] map) {
+		if(r==0) {
+			//솔루션 사용
+			answer = Math.min(answer, brickCnt);
+			return;
+		}
+		for (int c = 0; c < C; c++) {
+			// 1. map의 복제
+			int[][] cloned = cloneMap(map);
+			//2. 해당 컬럼의 맨 처음 벽돌 가져오기
+			Brick first = getFirstBrick(c, cloned);
+			//2-1 null -> continue;
+			if(first == null)
+				continue;
+			//3. 구슬을 떨어뜨려서 벽돌을 깬다. --> 깨진 벽돌 수?
+			int broken = crash(first, cloned);
+			//3-1. 이미 벽돌이 다 깨졌다면? --> 정답 = 0, 종료
+			if(broken >= brickCnt) {
+				answer = 0;
+				return;
+			}
+			//4. 화면정리
+			cleanMap(cloned);
+			//5. 다음 샷 발사
+			dropMarble(r-1, brickCnt-broken, cloned);
+		}
+	}
+	private static void cleanMap(int[][] map) {
+		for (int c = 0; c < C; c++) {
+			for (int r = R-1, nr = R-1; r >= 0; r--) {
+				if(map[r][c] != 0) {
+					int temp = map[r][c];
+					map[r][c] = 0;
+					map[nr--][c] = temp;
+				}
+			}
+		}
+	}
+	private static int crash(Brick first, int[][] map) {
+		int broken = 0;
+		map[first.row][first.col] = 0;
+		broken++;
+		
+		for (int p = 1; p < first.pow; p++) {
+			for (int d = 0; d < 4; d++) {
+				int nr = first.row + dirs[d][0] * p;
+				int nc = first.col + dirs[d][1] * p;
+				
+				if(isIn(nr, nc) && map[nr][nc] != 0) {
+					broken += crash(new Brick(nr, nc, map[nr][nc]), map);
+				}
+			}
+		}
+		return broken;
 	}
 	
-	public static int ballDown(int x) {
-		for (int i = 0; i < H; i++) {
-			if(map[i][x] != 0) return i;
+	private static boolean isIn(int r, int c) {
+		return 0 <= r && 0 <= c && r < R && c < C;
+	}
+	
+	private static Brick getFirstBrick(int c, int[][] map) {
+		for (int r = 0; r < R; r++) {
+			if(map[r][c] != 0) {
+				return new Brick(r, c, map[r][c]);
+			}
 		}
-		return -1;
+		return null;
+	}
+	
+	private static int[][] cloneMap(int[][] map) {
+		int[][] temp = new int[R][C];
+		for(int r = 0 ; r < R; r++) {
+			temp[r] = map[r].clone();
+		}
+		return temp;
 	}
 
+	static class Brick{
+		int row, col, pow;
+
+		public Brick(int row, int col, int pow) {
+			super();
+			this.row = row;
+			this.col = col;
+			this.pow = pow;
+		}
+
+		@Override
+		public String toString() {
+			return "[row=" + row + ", col=" + col + ", pow=" + pow + "]";
+		}
+		
+	}
 }

@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class Solution_D3_7701_염라대왕의이름정렬 {
+public class Solution_D4_7701_염라대왕의이름정렬 {
 
 	public static class OHC implements Comparator<String>{
 		
